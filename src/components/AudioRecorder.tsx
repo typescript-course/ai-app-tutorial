@@ -18,9 +18,11 @@ export function AudioRecorder() {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   const handleStartRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    setStream(stream);
     const mediaRecorder = new MediaRecorder(stream);
     setMediaRecorder(mediaRecorder);
     const chunks: Blob[] = [];
@@ -49,6 +51,13 @@ export function AudioRecorder() {
     if (mediaRecorder) {
       mediaRecorder.stop();
       setMediaRecorder(null);
+    }
+
+    if (stream) {
+      // Source: https://stackoverflow.com/a/44274928/3015595
+      stream
+        .getTracks() // get all tracks from the MediaStream
+        .forEach((track) => track.stop()); // stop each of them
     }
     setTimeout(() => setRecordingState("initial"), 2000);
   };
