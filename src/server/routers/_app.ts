@@ -18,9 +18,40 @@ export interface CreatePredictionResponse {
   user: any;
 }
 
+export interface GetPredictionResponse {
+  uuid: string;
+  version_id: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: string;
+  status: string;
+  inputs: any;
+  output: Output;
+  output_files: any[];
+  error: any;
+  run_logs: string;
+  version: any;
+  user: any;
+}
+
+export interface Output {
+  segments: any[];
+  translation: any;
+  transcription: string;
+  detected_language: string;
+}
+
 const ExpectedCreatePredictionResponseSchema = z.object({
   uuid: z.string(),
   status: z.string(),
+});
+
+const ExpectedGetPredictionResponseSchema = z.object({
+  uuid: z.string(),
+  status: z.string(),
+  output: z.object({
+    transcription: z.string(),
+  }),
 });
 
 export const appRouter = router({
@@ -72,9 +103,40 @@ export const appRouter = router({
           });
         }
 
-        const data = (await response.json()) as CreatePredictionResponse ;
-        const predictionCreated = ExpectedCreatePredictionResponseSchema.parse(data);
+        const data = (await response.json()) as CreatePredictionResponse;
+        const predictionCreated =
+          ExpectedCreatePredictionResponseSchema.parse(data);
         return predictionCreated;
+      }),
+    get: procedure
+      .input(
+        z.object({
+          uuid: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        const { uuid } = input;
+        const response = await fetch(
+          "https://api.replicate.com/v1/predictions/" + uuid,
+          {
+            headers: {
+              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.status !== 201) {
+          let error = await response.json();
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            cause: error.detail,
+          });
+        }
+
+        const data = (await response.json()) as GetPredictionResponse;
+        const prediction = ExpectedGetPredictionResponseSchema.parse(data);
+        return prediction;
       }),
   }),
 });
