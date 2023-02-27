@@ -1,5 +1,27 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { procedure, router } from "../trpc";
+
+export interface CreatePredictionResponse {
+  uuid: string;
+  version_id: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: any;
+  status: string;
+  inputs: any;
+  output: any;
+  output_files: any[];
+  error: any;
+  run_logs: string;
+  version: any;
+  user: any;
+}
+
+const ExpectedCreatePredictionResponseSchema = z.object({
+  uuid: z.string(),
+  status: z.string(),
+});
 
 export const appRouter = router({
   hello: procedure
@@ -13,6 +35,48 @@ export const appRouter = router({
         greeting: `hello ${input.text}`,
       };
     }),
+  predictions: router({
+    create: procedure
+      .input(
+        z.object({
+          // TODO@jsjoeio - research validating base64 strings
+          audio: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const base64Audio = input.audio;
+        const response = await fetch(
+          "https://api.replicate.com/v1/predictions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              // Pinned to a specific version of Whisper
+              // See https://replicate.com/openai/whisper/versions
+              version:
+                "30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed",
+
+              input: { audio: base64Audio },
+            }),
+          }
+        );
+
+        if (response.status !== 201) {
+          let error = await response.json();
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            cause: error.detail,
+          });
+        }
+
+        const data = (await response.json()) as CreatePredictionResponse ;
+        const predictionCreated = ExpectedCreatePredictionResponseSchema.parse(data);
+        return predictionCreated;
+      }),
+  }),
 });
 
 // export type definition of API
