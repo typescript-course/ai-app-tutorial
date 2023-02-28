@@ -15,6 +15,7 @@ specifiers:
   '@vitejs/plugin-react': ^3.1.0
   eslint: 8.34.0
   eslint-config-next: 13.2.1
+  js-base64: ^3.7.5
   jsdom: ^21.1.0
   next: 13.2.1
   react: 18.2.0
@@ -35,6 +36,7 @@ dependencies:
   '@types/react-dom': 18.0.11
   eslint: 8.34.0
   eslint-config-next: 13.2.1_7kw3g6rralp5ps6mg3uyzz6azm
+  js-base64: 3.7.5
   next: 13.2.1_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -2549,6 +2551,10 @@ packages:
       graceful-fs: 4.2.10
       picomatch: 2.3.1
     dev: true
+
+  /js-base64/3.7.5:
+    resolution: {integrity: sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==}
+    dev: false
 
   /js-sdsl/4.3.0:
     resolution: {integrity: sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==}

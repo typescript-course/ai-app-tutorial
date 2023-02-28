@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { Base64 } from "js-base64";
 import { z } from "zod";
 import { procedure, router } from "../trpc";
 
@@ -70,8 +71,7 @@ export const appRouter = router({
     create: procedure
       .input(
         z.object({
-          // TODO@jsjoeio - research validating base64 strings
-          audio: z.string(),
+          audio: z.string().refine(Base64.isValid),
         })
       )
       .mutation(async ({ input }) => {
@@ -103,7 +103,7 @@ export const appRouter = router({
           });
         }
 
-        const data = (await response.json()) as CreatePredictionResponse;
+        const data = await response.json();
         const predictionCreated =
           ExpectedCreatePredictionResponseSchema.parse(data);
         return predictionCreated;
@@ -134,7 +134,7 @@ export const appRouter = router({
           });
         }
 
-        const data = (await response.json()) as GetPredictionResponse;
+        const data = await response.json();
         const prediction = ExpectedGetPredictionResponseSchema.parse(data);
         return prediction;
       }),
